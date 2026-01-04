@@ -5,26 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>익명 크리스마스 편지함</title>
     <style>
-        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #fdf2f2; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; border: 2px solid #e63946; }
-        h2 { color: #e63946; }
-        select, input, textarea { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
-        textarea { height: 100px; resize: none; }
-        button { width: 100%; padding: 15px; background: #e63946; border: none; border-radius: 10px; color: white; font-size: 16px; font-weight: bold; cursor: pointer; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #fdf2f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
+        .container { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 400px; border: 2px solid #e63946; text-align: center; }
+        h2 { color: #e63946; margin-bottom: 25px; }
+        
+        .input-group { margin-bottom: 20px; text-align: left; }
+        label { display: block; font-weight: bold; margin-bottom: 8px; color: #333; font-size: 14px; }
+        
+        /* 입력 칸 색상 강조 스타일 */
+        select, input, textarea { 
+            width: 100%; padding: 14px; border: 2px solid #f1f1f1; border-radius: 12px; 
+            box-sizing: border-box; font-size: 15px; background-color: #fcf1f1; /* 연한 핑크색 바탕 */
+            color: #333; transition: all 0.3s ease;
+        }
+        select:focus, input:focus, textarea:focus { 
+            outline: none; border-color: #e63946; background-color: #ffffff; 
+            box-shadow: 0 0 8px rgba(230, 57, 70, 0.2); 
+        }
+        
+        textarea { height: 120px; resize: none; }
+        button { 
+            width: 100%; padding: 15px; background: #e63946; border: none; border-radius: 10px; 
+            color: white; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px;
+            box-shadow: 0 4px 0 #b32d36;
+        }
+        button:active { transform: translateY(2px); box-shadow: 0 2px 0 #b32d36; }
+        button:disabled { background: #ccc; box-shadow: none; cursor: not-allowed; transform: none; }
+        .hint { font-size: 11px; color: #a5a5a5; margin-top: 5px; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>🎄 익명 마음 전달소</h2>
-        <input type="text" id="senderName" placeholder="보내는 사람 (관리자 확인용)">
-        <select id="memberSelect">
-            <option value="">받는 사람 선택</option>
-            {% for member in members %}
-            <option value="{{ member.id }}">{{ member.name }}</option>
-            {% endfor %}
-        </select>
-        <textarea id="message" placeholder="메시지를 적어주세요 (사진으로 변환됩니다)"></textarea>
+        <div class="input-group">
+            <label>👤 보내는 사람</label>
+            <input type="text" id="senderName" placeholder="관리자 확인용 성함을 적어주세요">
+        </div>
+        <div class="input-group">
+            <label>🎯 받는 사람</label>
+            <select id="memberSelect">
+                <option value="">멤버를 선택하세요</option>
+                {% for member in members %}
+                <option value="{{ member.id }}">{{ member.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="input-group">
+            <label>📝 편지 내용</label>
+            <textarea id="message" placeholder="내용을 입력하세요 (사진에 합성됩니다)"></textarea>
+            <div class="hint">내용이 너무 길면 하단이 잘릴 수 있습니다.</div>
+        </div>
         <button id="sendBtn" onclick="sendMessage()">익명 편지 보내기</button>
     </div>
 
@@ -38,21 +68,21 @@
                 message: document.getElementById('message').value
             };
 
-            if (!data.userId || !data.message || !data.senderName) return alert("내용을 다 채워주세요!");
+            if (!data.userId || !data.message || !data.senderName) return alert("항목을 모두 채워주세요!");
 
             btn.disabled = true;
-            btn.innerText = "전송 중...";
+            btn.innerText = "제작 중...";
 
             fetch('/send', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify(data)
             }).then(() => {
-                alert("편지가 성공적으로 전달되었습니다!");
+                alert("성공적으로 보냈습니다!");
                 document.getElementById('message').value = "";
                 let count = 3;
                 const timer = setInterval(() => {
-                    btn.innerText = `대기 중 (${count}초)`;
+                    btn.innerText = `대기 (${count}초)`;
                     if (count-- <= 0) {
                         clearInterval(timer);
                         btn.disabled = false;
