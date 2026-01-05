@@ -3,13 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <meta property="og:title" content="🎄 익명 크리스마스 편지함">
-    <meta property="og:description" content="따뜻한 마음을 펭귄 편지지에 담아 익명으로 보내보세요!">
-    <meta property="og:image" content="https://raw.githubusercontent.com/zlwhswkdwndud/discord-delivery/main/background.png">
-    <meta property="og:type" content="website">
-    <meta name="theme-color" content="#e63946">
-
+    <meta property="og:description" content="원하는 편지지를 골라 따뜻한 마음을 전해보세요!">
+    <meta property="og:image" content="https://raw.githubusercontent.com/본인유저네임/저장소이름/main/bg1.png">
     <title>익명 크리스마스 편지함</title>
     <style>
         body { font-family: 'Apple SD Gothic Neo', sans-serif; background: #fdf2f2; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
@@ -22,6 +18,17 @@
             box-sizing: border-box; font-size: 15px; background-color: #fcf1f1; transition: all 0.3s ease;
         }
         select:focus, input:focus, textarea:focus { outline: none; border-color: #e63946; background-color: #ffffff; box-shadow: 0 0 8px rgba(230, 57, 70, 0.2); }
+        
+        /* 테마 선택 스타일 */
+        .theme-selector { display: flex; gap: 15px; justify-content: center; margin-top: 5px; }
+        .theme-option { cursor: pointer; text-align: center; flex: 1; }
+        .theme-option input { display: none; }
+        .theme-option div { 
+            padding: 10px; border: 2px solid #f1f1f1; border-radius: 10px; background: #fff; 
+            font-size: 13px; font-weight: bold; color: #888; transition: 0.3s;
+        }
+        .theme-option input:checked + div { border-color: #e63946; color: #e63946; background: #fdf2f2; }
+
         textarea { height: 120px; resize: none; }
         button { 
             width: 100%; padding: 15px; background: #e63946; border: none; border-radius: 10px; 
@@ -35,13 +42,28 @@
 </head>
 <body>
     <div class="container">
-        <h2>🎄익명 마음 전달소🎄</h2>
+        <h2>🎄 익명 마음 전달소</h2>
+        
+        <div class="input-group">
+            <label>편지지 디자인 선택</label>
+            <div class="theme-selector">
+                <label class="theme-option">
+                    <input type="radio" name="theme" value="bg1.png" checked>
+                    <div>⛄ 겨울 테마</div>
+                </label>
+                <label class="theme-option">
+                    <input type="radio" name="theme" value="bg2.png">
+                    <div>🌊 여름 테마</div>
+                </label>
+            </div>
+        </div>
+
         <div class="input-group">
             <label>보내는 사람</label>
-            <input type="text" id="senderName" placeholder="관리자 확인용 성함">
+            <input type="text" id="senderName" placeholder="(공개 되지 않아요!)">
         </div>
         <div class="input-group">
-            <label> 받는 사람</label>
+            <label>받는 사람</label>
             <select id="memberSelect">
                 <option value="">멤버를 선택하세요</option>
                 {% for member in members %}
@@ -52,21 +74,28 @@
         <div class="input-group">
             <label>편지 내용</label>
             <textarea id="message" placeholder="따뜻한 한마디를 적어주세요"></textarea>
-            <div class="hint">Myfont 폰트로 예쁘게 합성됩니다!</div>
+            <div class="hint">예쁜 편지지로 전송 됩니다!</div>
         </div>
         <button id="sendBtn" onclick="sendMessage()">익명 편지 보내기</button>
     </div>
+
     <script>
         function sendMessage() {
             const btn = document.getElementById('sendBtn');
+            const selectedTheme = document.querySelector('input[name="theme"]:checked').value;
+            
             const data = {
                 userId: document.getElementById('memberSelect').value,
                 userName: document.getElementById('memberSelect').options[document.getElementById('memberSelect').selectedIndex]?.text,
                 senderName: document.getElementById('senderName').value,
-                message: document.getElementById('message').value
+                message: document.getElementById('message').value,
+                theme: selectedTheme
             };
-            if (!data.userId || !data.message || !data.senderName) return alert("모든 항목을 입력해주세요!");
+
+            if (!data.userId || !data.message || !data.senderName) return alert("항목을 모두 채워주세요!");
+
             btn.disabled = true; btn.innerText = "전송 중...";
+
             fetch('/send', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
